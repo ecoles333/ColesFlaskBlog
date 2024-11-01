@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, url_for, flash, redirect, abo
 # make a Flask application object called app
 app = Flask(__name__)
 app.config["DEBUG"] = True
+app.config['SECRET_KEY'] = 'your secret key'
 
 
 
@@ -33,6 +34,27 @@ def index():
     return render_template('index.html', posts=posts)
 
 # route to create a post
+@app.route('/create/', methods= ('GET', 'POST'))
+def create():
+    if request.method == 'POST':
+        #get title and content of post
+        title = request.form['title']
+        content = request.form['content']
+        #stay on page and display error if no content submited
+
+        #else make a db conn and insert new data
+        if not title:
+            flash("Title Required")
+        elif not content:
+            flash("Content required")
+        else:
+            conn = get_db_connection()
+            #insert new data
+            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)', (title,content))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('index'))
+    return render_template('create.html')
 
 
 app.run()
